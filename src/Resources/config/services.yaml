@@ -1,0 +1,11 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Wexample\SymfonyRemoteEcb\Service\EcbExchangeRateProvider:
+        arguments:
+            $httpClient: '@?http_client'
+            $url: '%wexample_symfony_remote_ecb.url%'
+            $cache: '@?cache.app'
