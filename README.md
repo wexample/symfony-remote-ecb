@@ -1,6 +1,6 @@
 # symfony-remote-ecb
 
-Version: 2.0.0
+Version: 2.0.1
 
 ```php
 $rate = $exchangeRateService->getRate('USD', 'EUR', new DateTimeImmutable('2026-03-02'));
