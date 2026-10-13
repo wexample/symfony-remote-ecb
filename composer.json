@@ -1,7 +1,7 @@
 {
   "name": "wexample/symfony-remote-ecb",
   "description": "Exchange rates from the European Central Bank reference rates, as symfony-money's provider, declared as a symfony-remote",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "type": "library",
   "license": "MIT",
   "autoload": {
@@ -22,10 +22,10 @@
   ],
   "require": {
     "php": ">=8.5",
-    "wexample/symfony-helpers": ">=15.0.0",
+    "wexample/symfony-helpers": ">=16.0.0",
     "wexample/symfony-remote": ">=2.0.0",
     "symfony/http-client": ">=7.0",
-    "wexample/symfony-money": ">=5.0.0",
+    "wexample/symfony-money": ">=6.0.0",
     "symfony/cache-contracts": "^3.0"
   },
   "require-dev": {

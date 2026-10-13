@@ -1,10 +1,22 @@
 # symfony-remote-ecb
 
-Version: 1.0.1
+Version: 2.0.0
+
+```php
+$rate = $exchangeRateService->getRate('USD', 'EUR', new DateTimeImmutable('2026-03-02'));
+$rate->rate;              // "0.922084"
+$rate->date;              // the day the ECB published it
+$euros = $rate->convert(100000);   // 1 000.00 USD in euro cents
+```
+
+A rate between two currencies other than the euro goes through the euro. A day without publication (weekend, holiday, today before 16:00) takes the last published day, up to a week back. A currency the ECB does not publish, or a day older than its history, gives null; a feed that cannot be read throws `EcbException`.
+
+These are reference rates, for information and for accounting: what a bank applies to a payment differs.
 
 ## Table of Contents
 
 - [Integration in the Suite](#integration-in-the-suite)
+- [Dependencies](#dependencies)
 - [Versioning & Compatibility Policy](#versioning--compatibility-policy)
 - [License](#license)
 - [About us](#about-us)
@@ -19,6 +31,15 @@ This package is part of the Wexample Suite — a collection of high-quality, mod
 The suite includes packages for configuration management, file handling, prompts, and more. Each package can be used independently or as part of the integrated suite.
 
 Visit the [Wexample Suite documentation](https://docs.wexample.com) for the complete package ecosystem.
+
+## Dependencies
+
+- php: >=8.5
+- wexample/symfony-helpers: >=16.0.0
+- wexample/symfony-remote: >=2.0.0
+- symfony/http-client: >=7.0
+- wexample/symfony-money: >=6.0.0
+- symfony/cache-contracts: ^3.0
 
 ## Versioning & Compatibility Policy
 
