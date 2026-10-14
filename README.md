@@ -1,6 +1,6 @@
 # symfony-remote-ecb
 
-Version: 2.0.1
+Version: 2.0.2
 
 ```php
 $rate = $exchangeRateService->getRate('USD', 'EUR', new DateTimeImmutable('2026-03-02'));
@@ -38,7 +38,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 - wexample/symfony-helpers: >=16.0.0
 - wexample/symfony-remote: >=2.0.0
 - symfony/http-client: >=7.0
-- wexample/symfony-money: >=6.0.0
+- wexample/symfony-money: >=7.0.0
 - symfony/cache-contracts: ^3.0
 
 ## Versioning & Compatibility Policy
