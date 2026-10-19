@@ -12,6 +12,7 @@ use Wexample\SymfonyMoney\Class\ExchangeRate;
 use Wexample\SymfonyMoney\Helper\RateHelper;
 use Wexample\SymfonyMoney\Interface\ExchangeRateProviderInterface;
 use Wexample\SymfonyRemoteEcb\Exception\EcbException;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * The euro foreign exchange reference rates of the European Central Bank: about
@@ -22,7 +23,7 @@ use Wexample\SymfonyRemoteEcb\Exception\EcbException;
  * one before it, up to a week back. Recent days are read from the 90-day feed,
  * older ones from the full history; each feed is cached for a few hours.
  */
-class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteInterface
+class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteInterface, ResetInterface
 {
     public const string DEFAULT_URL = 'https://www.ecb.europa.eu/stats/eurofxref';
 
@@ -40,6 +41,14 @@ class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteIn
         private readonly string $url = self::DEFAULT_URL,
         private readonly ?CacheInterface $cache = null,
     ) {
+    }
+
+    /**
+     * The feed changes every day: a worker living longer must read it again.
+     */
+    public function reset(): void
+    {
+        $this->feeds = [];
     }
 
     public function getKey(): string
