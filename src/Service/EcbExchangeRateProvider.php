@@ -6,13 +6,13 @@ use DateTimeImmutable;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\Service\ResetInterface;
 use Wexample\PhpRemote\Class\RemoteStatus;
 use Wexample\PhpRemote\Interface\RemoteInterface;
 use Wexample\SymfonyMoney\Class\ExchangeRate;
 use Wexample\SymfonyMoney\Helper\RateHelper;
 use Wexample\SymfonyMoney\Interface\ExchangeRateProviderInterface;
 use Wexample\SymfonyRemoteEcb\Exception\EcbException;
-use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * The euro foreign exchange reference rates of the European Central Bank: about
