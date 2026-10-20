@@ -1,6 +1,6 @@
 # symfony-remote-ecb
 
-Version: 3.0.0
+Version: 3.0.1
 
 ```php
 $rate = $exchangeRateService->getRate('USD', 'EUR', new DateTimeImmutable('2026-03-02'));
@@ -33,7 +33,7 @@ The suite includes packages for configuration management, file handling, prompts
 ## Dependencies
 
 - php: >=8.5
-- wexample/symfony-helpers: >=17.0.0
+- wexample/symfony-helpers: >=18.0.0
 - wexample/symfony-remote: >=2.0.0
 - symfony/http-client: >=7.0
 - wexample/symfony-money: >=7.0.0
