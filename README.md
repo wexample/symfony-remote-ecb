@@ -1,72 +1,23 @@
 # symfony-remote-ecb
 
-Version: 3.0.1
+Version: 3.0.2
 
-```php
-$rate = $exchangeRateService->getRate('USD', 'EUR', new DateTimeImmutable('2026-03-02'));
-$rate->rate;              // "0.922084"
-$rate->date;              // the day the ECB published it
-$euros = $rate->convert(100000);   // 1 000.00 USD in euro cents
-```
-
-A rate between two currencies other than the euro goes through the euro. A day without publication (weekend, holiday, today before 16:00) takes the last published day, up to a week back. A currency the ECB does not publish, or a day older than its history, gives null; a feed that cannot be read throws `EcbException`.
-
-These are reference rates, for information and for accounting: what a bank applies to a payment differs.
+Exchange rates from the European Central Bank reference rates, as symfony-money's provider, declared as a symfony-remote
 
 ## Table of Contents
 
-- [Integration in the Suite](#integration-in-the-suite)
-- [Dependencies](#dependencies)
-- [Versioning & Compatibility Policy](#versioning--compatibility-policy)
-- [License](#license)
-- [About us](#about-us)
-- [Migration Notes](#migration-notes)
+- [Installation](#installation)
+- [Introduction](#introduction)
 
-## Integration in the Suite
+## Installation
 
-This package is part of the Wexample Suite — a collection of high-quality, modular tools designed to work seamlessly together across multiple languages and environments.
+```php
+// config/bundles.php
+Wexample\SymfonyRemote\WexampleSymfonyRemoteBundle::class => ['all' => true],
+Wexample\SymfonyMoney\WexampleSymfonyMoneyBundle::class => ['all' => true],
+Wexample\SymfonyRemoteEcb\WexampleSymfonyRemoteEcbBundle::class => ['all' => true],
+```
 
-### Related Packages
+Nothing to configure: the public ECB feed is the default (`wexample_symfony_remote_ecb.url` to point elsewhere). Feeds are cached in `cache.app` for six hours.
 
-The suite includes packages for configuration management, file handling, prompts, and more. Each package can be used independently or as part of the integrated suite.
-
-## Dependencies
-
-- php: >=8.5
-- wexample/symfony-helpers: >=18.0.0
-- wexample/symfony-remote: >=2.0.0
-- symfony/http-client: >=7.0
-- wexample/symfony-money: >=7.0.0
-- symfony/cache-contracts: ^3.0
-
-## Versioning & Compatibility Policy
-
-Wexample packages follow **Semantic Versioning** (SemVer):
-
-- **MAJOR**: Breaking changes
-- **MINOR**: New features, backward compatible
-- **PATCH**: Bug fixes, backward compatible
-
-We maintain backward compatibility within major versions and provide clear migration guides for breaking changes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-Free to use in both personal and commercial projects.
-
-## About us
-
-[Wexample](https://wexample.com) stands as a cornerstone of the digital ecosystem — a collective of seasoned engineers, researchers, and creators driven by a relentless pursuit of technological excellence. More than a media platform, it has grown into a vibrant community where innovation meets craftsmanship, and where every line of code reflects a commitment to clarity, durability, and shared intelligence.
-
-This packages suite embodies this spirit. Trusted by professionals and enthusiasts alike, it delivers a consistent, high-quality foundation for modern development — open, elegant, and battle-tested. Its reputation is built on years of collaboration, refinement, and rigorous attention to detail, making it a natural choice for those who demand both robustness and beauty in their tools.
-
-Wexample cultivates a culture of mastery. Each package, each contribution carries the mark of a community that values precision, ethics, and innovation — a community proud to shape the future of digital craftsmanship.
-
-Built and maintained by [Romain Weeger](https://weeger.io).
-
-## Migration Notes
-
-When upgrading between major versions, refer to the migration guides in the documentation.
-
-Breaking changes are clearly documented with upgrade paths and examples.
+`symfony-remote-ecb` gives `symfony-money` its exchange rates from the European Central Bank: the euro foreign exchange reference rates, about thirty currencies against the euro, published each working day around 16:00 CET. `EcbExchangeRateProvider` implements money's `ExchangeRateProviderInterface`, so `ExchangeRateService` answers through it once the bundle is installed. It is also declared as a `symfony-remote`, so `remote:status` checks the feed.
