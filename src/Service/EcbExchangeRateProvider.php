@@ -21,7 +21,10 @@ use Wexample\SymfonyRemoteEcb\Exception\EcbException;
  *
  * A day without publication (weekend, holiday, today before 16:00) takes the last
  * one before it, up to a week back. Recent days are read from the 90-day feed,
- * older ones from the full history; each feed is cached for a few hours.
+ * older ones from the full history; each feed is cached for a few hours, month
+ * by month: a rate needs a week of days, and the whole history — a quarter of
+ * a century — read back from the cache at every request would cost more than
+ * the rate is worth.
  */
 class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteInterface, ResetInterface
 {
@@ -33,8 +36,13 @@ class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteIn
 
     private const int LOOK_BACK_DAYS = 7;
 
-    /** @var array<string, array<string, array<string, string>>> Feed → day → currency → rate against the euro. */
+    private const int CACHE_TTL = 6 * 3600;
+
+    /** @var array<string, array<string, array<string, array<string, string>>>> Feed → month → day → currency → rate against the euro, as fetched. */
     private array $feeds = [];
+
+    /** @var array<string, array<string, array<string, array<string, string>>>> Feed → month → day → currency → rate against the euro, as read. */
+    private array $months = [];
 
     public function __construct(
         private readonly ?HttpClientInterface $httpClient = null,
@@ -49,6 +57,7 @@ class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteIn
     public function reset(): void
     {
         $this->feeds = [];
+        $this->months = [];
     }
 
     public function getKey(): string
@@ -108,10 +117,10 @@ class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteIn
     private function findDay(DateTimeImmutable $date): ?array
     {
         $feed = $date >= new DateTimeImmutable('-85 days') ? self::FEED_90_DAYS : self::FEED_HISTORY;
-        $days = $this->load($feed);
 
         for ($back = 0; $back <= self::LOOK_BACK_DAYS; ++$back) {
             $day = $date->setTime(0, 0)->modify(sprintf('-%d days', $back));
+            $days = $this->loadMonth($feed, $day->format('Y-m'));
 
             if (isset($days[$day->format('Y-m-d')])) {
                 return [$day, $days[$day->format('Y-m-d')]];
@@ -122,17 +131,76 @@ class EcbExchangeRateProvider implements ExchangeRateProviderInterface, RemoteIn
     }
 
     /**
+     * @return array<string, array<string, string>> day → currency → rate, empty for a month the feed does not hold
+     */
+    private function loadMonth(
+        string $feed,
+        string $month
+    ): array {
+        return $this->months[$feed][$month] ??= null === $this->cache
+            ? $this->loadFeed($feed)[$month] ?? []
+            : $this->loadCachedMonth($feed, $month);
+    }
+
+    /**
+     * The feed's months stand apart in the cache, beside the list of those it
+     * holds: a month missing from the list has no rate, without the feed being
+     * fetched again to learn it; one on the list but gone from the cache —
+     * evicted on its own — is read from the feed again.
+     *
      * @return array<string, array<string, string>>
      */
-    private function load(string $feed): array
-    {
-        return $this->feeds[$feed] ??= null === $this->cache
-            ? $this->fetch($feed)
-            : $this->cache->get('wexample_remote_ecb_'.str_replace(['-', '.'], '_', $feed), function (ItemInterface $item) use ($feed): array {
-                $item->expiresAfter(6 * 3600);
+    private function loadCachedMonth(
+        string $feed,
+        string $month
+    ): array {
+        $prefix = 'wexample_remote_ecb_'.str_replace(['-', '.'], '_', $feed).'_';
+        $fetched = null;
 
-                return $this->fetch($feed);
-            });
+        $held = $this->cache->get($prefix.'months', function (ItemInterface $item) use ($feed, &$fetched): array {
+            $item->expiresAfter(self::CACHE_TTL);
+            $fetched = $this->loadFeed($feed);
+
+            return array_keys($fetched);
+        });
+
+        // Written once the list is, outside its callback; INF has each month
+        // replaced rather than a copy from an earlier fetch kept.
+        foreach ($fetched ?? [] as $fetchedMonth => $days) {
+            $this->cache->get($prefix.$fetchedMonth, function (ItemInterface $item) use ($days): array {
+                $item->expiresAfter(self::CACHE_TTL);
+
+                return $days;
+            }, INF);
+        }
+
+        if (! in_array($month, $held, true)) {
+            return [];
+        }
+
+        return $this->cache->get($prefix.$month, function (ItemInterface $item) use ($feed, $month): array {
+            $item->expiresAfter(self::CACHE_TTL);
+
+            return $this->loadFeed($feed)[$month] ?? [];
+        });
+    }
+
+    /**
+     * @return array<string, array<string, array<string, string>>> month → day → currency → rate
+     */
+    private function loadFeed(string $feed): array
+    {
+        if (! isset($this->feeds[$feed])) {
+            $months = [];
+
+            foreach ($this->fetch($feed) as $day => $rates) {
+                $months[substr($day, 0, 7)][$day] = $rates;
+            }
+
+            $this->feeds[$feed] = $months;
+        }
+
+        return $this->feeds[$feed];
     }
 
     /**
