@@ -1,6 +1,6 @@
 # symfony-remote-ecb
 
-Version: 4.0.0
+Version: 4.0.1
 
 Exchange rates from the European Central Bank reference rates, as symfony-money's provider, declared as a symfony-remote
 
